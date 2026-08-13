@@ -1,0 +1,7 @@
+{
+  "name": "abacus_ui",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
