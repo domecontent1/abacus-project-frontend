@@ -7,7 +7,7 @@ import confetti from 'canvas-confetti'; // We'll add this for the win!
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonCard, IonCardContent,
   IonItem, IonInput, IonButton, IonText, IonLabel, IonRange, IonIcon,
-  IonProgressBar, IonBadge, IonButtons, IonSelect, IonSelectOption
+  IonProgressBar, IonBadge, IonButtons, IonSelect, IonSelectOption, IonSegment, IonSegmentButton, IonSpinner
 } from '@ionic/angular/standalone';
 import { DataService } from '../services/data.service';
 import { addIcons } from 'ionicons';
@@ -21,7 +21,7 @@ import { star, trophy, checkmarkCircle, closeCircle, play, arrowForwardOutline, 
   imports: [
     CommonModule, FormsModule, HttpClientModule,
     IonHeader, IonToolbar, IonTitle, IonContent, IonCard, IonCardContent,
-    IonItem, IonButton, IonLabel, IonRange, IonIcon, IonBadge, IonButtons, IonSelect, IonSelectOption
+    IonItem, IonButton, IonLabel, IonRange, IonIcon, IonBadge, IonButtons, IonSelect, IonSelectOption, IonSegment, IonSegmentButton
   ],
 })
 
@@ -35,7 +35,6 @@ export class HomePage {
   xp: number = 0;
   level: string = 'DIRECT';
   numRows: number = 3;
-  displaySpeed: number = 1000;
   totalQuestions: number = 5;
   questions: any[] = [];
   currentIndex: number = 0;
@@ -45,6 +44,13 @@ export class HomePage {
   userAnswer: string = ""; // Always keep as string
   correctAnswer: number = 0;
   score: number = 0;
+  digitCount: number = 1; // Default to 1 digit
+  displaySpeed: number = 1000; // Default to 1 second
+  isLoading: boolean = false; // NEW
+
+
+
+
 
   // eslint-disable-next-line @angular-eslint/prefer-inject
   constructor(private dataService: DataService) {
@@ -64,16 +70,29 @@ export class HomePage {
   }
 
   async startNewGame() {
+    this.isLoading = true;
     this.score = 0;
     this.currentIndex = 0;
     this.streak = 0;
-    this.dataService.getQuestions(this.totalQuestions, 1, this.numRows).subscribe({
+
+    // 2. Explicitly cast to Number to be 100% safe
+    const d = Number(this.digitCount);
+    const r = Number(this.numRows);
+
+    console.log("SENDING TO BACKEND:", { questions: this.totalQuestions, digits: d, rows: r, level: this.level });
+
+    this.dataService.getQuestions(this.totalQuestions, d, r, this.level).subscribe({
       next: async (res: any) => {
         this.questions = res.questions;
+        this.isLoading = false;
         await this.showCountdown();
         this.runSequence();
       },
-      error: () => alert("Engine waking up... please wait.")
+      error: (err) => {
+        this.isLoading = false;
+        alert("Error connecting to backend.");
+        console.error(err);
+      }
     });
   }
 
@@ -108,32 +127,46 @@ export class HomePage {
   }
 
   // --- KEYBOARD LOGIC FIX ---
+  // 1. Add a helper to play sounds
+  playSound(type: 'correct' | 'wrong' | 'click') {
+    const sounds = {
+      correct: 'https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3',
+      wrong: 'https://assets.mixkit.co/active_storage/sfx/2020/2020-preview.mp3',
+      click: 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'
+    };
+    const audio = new Audio(sounds[type]);
+    audio.play();
+  }
+
+// 2. Use them in your functions
   addToAnswer(val: number) {
+    this.playSound('click'); // Click sound
     this.speak(val.toString());
-    // Limit to 5 digits so it doesn't break the UI
     if (this.userAnswer.length < 5) {
       this.userAnswer += val.toString();
     }
+  }
+
+  submitAnswer() {
+    this.correctAnswer = this.questions[this.currentIndex].answer;
+    if (Number(this.userAnswer) === this.correctAnswer) {
+      this.playSound('correct'); // Victory sound
+      this.score++;
+      this.streak++;
+      this.xp += (10 * this.streak);
+      this.celebrate();
+    } else {
+      this.playSound('wrong'); // Oof sound
+      this.streak = 0;
+    }
+    this.gameState = 'FEEDBACK';
   }
 
   clearAnswer() {
     this.userAnswer = "";
   }
 
-  submitAnswer() {
-    this.correctAnswer = this.questions[this.currentIndex].answer;
 
-    // Compare number version of string to the answer
-    if (Number(this.userAnswer) === this.correctAnswer) {
-      this.score++;
-      this.streak++;
-      this.xp += (10 * this.streak);
-      this.celebrate();
-    } else {
-      this.streak = 0;
-    }
-    this.gameState = 'FEEDBACK';
-  }
 
   nextQuestion() {
     if (this.currentIndex < this.questions.length - 1) {

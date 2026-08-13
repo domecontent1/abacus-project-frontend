@@ -11,8 +11,9 @@ export class DataService {
   // eslint-disable-next-line @angular-eslint/prefer-inject
   constructor(private http: HttpClient) { }
 
-  getQuestions(count: number, digits: number, rows: number): Observable<any> {
-    const finalUrl = `${this.apiUrl}?questions=${count}&digits=${digits}&rows=${rows}`;
-    return this.http.get(finalUrl); // NO url: label here!
+  getQuestions(count: number, digits: number, rows: number, level: string): Observable<any> {
+    // Ensure 'digits' is exactly what the backend expects
+    const url = `${this.apiUrl}?questions=${count}&digits=${digits}&rows=${rows}&level=${level}`;
+    return this.http.get(url);
   }
 }
