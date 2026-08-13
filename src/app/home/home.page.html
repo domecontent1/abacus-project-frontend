@@ -38,7 +38,7 @@
           </div>
 
           <div class="setting-item">
-            <ion-label>Numbers (Rows): <b>{{numRows}}</b></ion-label>
+            <ion-label>Select How many numbers : <b>{{numRows}}</b></ion-label>
             <ion-range [min]="3" [max]="15" [(ngModel)]="numRows" color="danger"></ion-range>
           </div>
 
@@ -76,18 +76,18 @@
   <!-- 4. FEEDBACK SCREEN (Corrected line 64 error) -->
   @if (gameState === 'FEEDBACK') {
     <div class="feedback-container">
-      @if (userAnswer == correctAnswer) {
+      @if (userAnswer === correctAnswer) {
         <ion-icon name="checkmark-circle" color="success" class="big-icon"></ion-icon>
-        <h1 class="success-text">BRILLIANT!</h1>
+        <h1 class="success-text">BRILLIANT !</h1>
       } @else {
         <ion-icon name="close-circle" color="danger" class="big-icon"></ion-icon>
-        <h1 class="fail-text">NOT QUITE!</h1>
+        <h1 class="fail-text">Your Answer is Wrong</h1>
       }
 
       <div class="reveal-box">
-        <p>The correct answer was</p>
-        <h2 class="final-total">{{correctAnswer}}</h2>
-        <p class="user-said">You typed: {{userAnswer || 0}}</p>
+        <p>The Correct Answer : </p>
+        <h2 class="final-total"> The Answer is : {{correctAnswer}}</h2>
+        <p class="user-said">You typed : {{userAnswer || 0}}</p>
       </div>
 
       <ion-button expand="block" (click)="nextQuestion()" class="next-btn">
