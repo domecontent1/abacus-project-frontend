@@ -11,7 +11,8 @@ export interface Question {
   providedIn: 'root'
 })
 export class DataService {
-  private apiUrl = 'http://127.0.0.1:8000/api/practice';
+  // Replace 'http://127.0.0.1:8000' with your Render URL
+  private apiUrl = 'https://abacus-project-backend.onrender.com/api/practice';
 
   constructor(private http: HttpClient) { }
 
