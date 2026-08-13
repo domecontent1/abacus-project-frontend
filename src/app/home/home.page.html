@@ -1,20 +1,119 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Blank
-    </ion-title>
+<ion-header class="ion-no-border">
+  <ion-toolbar color="transparent">
+    <ion-title></ion-title>
+    <!-- Show Home button only if we are NOT in the Menu -->
+    @if (gameState !== 'MENU') {
+      <ion-buttons slot="end">
+        <ion-button (click)="goToMenu()" color="light">
+          <ion-icon name="close" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    }
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" class="kid-bg">
 
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
-  </div>
+  <!-- 1. START MENU -->
+  @if (gameState === 'MENU') {
+    <div class="menu-container">
+      <div class="xp-badge">🧠 Brain XP: {{xp}}</div>
+
+      <div class="hero-section">
+        <h1 class="main-title">ABACUS<br><span>HERO</span></h1>
+      </div>
+
+      <ion-card class="glass-card">
+        <ion-card-content>
+          <!-- Level Selector -->
+          <div class="setting-item">
+            <ion-label>Training Level</ion-label>
+            <ion-item lines="none" class="kid-select">
+              <ion-select [(ngModel)]="level" interface="popover">
+                <ion-select-option value="DIRECT">Level 1: Direct</ion-select-option>
+                <ion-select-option value="SMALL">Level 2: Small Friends</ion-select-option>
+                <ion-select-option value="BIG">Level 3: Big Friends</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </div>
+
+          <div class="setting-item">
+            <ion-label>Numbers (Rows): <b>{{numRows}}</b></ion-label>
+            <ion-range [min]="3" [max]="15" [(ngModel)]="numRows" color="danger"></ion-range>
+          </div>
+
+          <ion-button expand="block" (click)="startNewGame()" class="play-button">
+            START MISSION
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  }
+
+  <!-- 2. FLASHING SCREEN -->
+  @if (gameState === 'FLASHING') {
+    <div class="game-area">
+      <ion-badge color="dark">Question {{currentIndex + 1}}</ion-badge>
+      <div class="number-circle animate-pop">
+        {{ currentFlashNumber }}
+      </div>
+    </div>
+  }
+
+  <!-- 3. INPUT SCREEN -->
+  @if (gameState === 'INPUT') {
+    <div class="input-area">
+      <h2 class="prompt-text">What was the total?</h2>
+      <div class="input-box">
+        <ion-input type="number" [(ngModel)]="userAnswer" placeholder="0" class="large-input" autofocus="true"></ion-input>
+      </div>
+      <ion-button expand="block" (click)="submitAnswer()" class="check-button" color="warning">
+        CHECK ANSWER
+      </ion-button>
+    </div>
+  }
+
+  <!-- 4. FEEDBACK SCREEN (Corrected line 64 error) -->
+  @if (gameState === 'FEEDBACK') {
+    <div class="feedback-container">
+      @if (userAnswer == correctAnswer) {
+        <ion-icon name="checkmark-circle" color="success" class="big-icon"></ion-icon>
+        <h1 class="success-text">BRILLIANT!</h1>
+      } @else {
+        <ion-icon name="close-circle" color="danger" class="big-icon"></ion-icon>
+        <h1 class="fail-text">NOT QUITE!</h1>
+      }
+
+      <div class="reveal-box">
+        <p>The correct answer was</p>
+        <h2 class="final-total">{{correctAnswer}}</h2>
+        <p class="user-said">You typed: {{userAnswer || 0}}</p>
+      </div>
+
+      <ion-button expand="block" (click)="nextQuestion()" class="next-btn">
+        CONTINUE <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+      </ion-button>
+
+      <!-- Back to Menu option -->
+      <ion-button fill="clear" (click)="goToMenu()" color="light">
+        Quit Mission
+      </ion-button>
+    </div>
+  }
+
+  <!-- 5. FINAL RESULT -->
+  @if (gameState === 'RESULT') {
+    <div class="result-container">
+      <ion-icon name="trophy" class="trophy-icon"></ion-icon>
+      <h1>Mission Complete!</h1>
+      <div class="final-score">
+        <span>YOUR SCORE</span>
+        <h2>{{score}} / {{totalQuestions}}</h2>
+      </div>
+      <ion-button expand="block" (click)="gameState = 'MENU'" class="play-button">
+        <ion-icon name="refresh-outline" slot="start"></ion-icon> PLAY AGAIN
+      </ion-button>
+    </div>
+  }
+
 </ion-content>
