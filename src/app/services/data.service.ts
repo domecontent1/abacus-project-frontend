@@ -8,6 +8,7 @@ import { Observable } from 'rxjs';
 export class DataService {
   private apiUrl = 'https://abacus-project-backend.onrender.com/api/practice';
 
+  // eslint-disable-next-line @angular-eslint/prefer-inject
   constructor(private http: HttpClient) { }
 
   getQuestions(count: number, digits: number, rows: number): Observable<any> {

@@ -54,8 +54,20 @@
   @if (gameState === 'FLASHING') {
     <div class="game-area">
       <ion-badge color="dark">Question {{currentIndex + 1}}</ion-badge>
-      <div class="number-circle animate-pop">
-        {{ currentFlashNumber }}
+
+      <div class="number-circle animate-pop" [class.countdown-style]="isCountdown">
+        @if (isCountdown) {
+          <span class="countdown-text">{{ countdownValue }}</span>
+        } @else {
+          {{ currentFlashNumber }}
+        }
+      </div>
+
+      <!-- Progress dots -->
+      <div class="progress-dots">
+        @for(q of [].constructor(totalQuestions); track $index) {
+          <div class="dot" [class.active]="$index <= currentIndex"></div>
+        }
       </div>
     </div>
   }
