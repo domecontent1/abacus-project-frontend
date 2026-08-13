@@ -21,24 +21,28 @@ import { star, trophy, checkmarkCircle, closeCircle, play, arrowForwardOutline, 
   imports: [
     CommonModule, FormsModule, HttpClientModule,
     IonHeader, IonToolbar, IonTitle, IonContent, IonCard, IonCardContent,
-    IonItem, IonInput, IonButton, IonLabel, IonRange, IonIcon, IonBadge, IonButtons, IonSelect, IonSelectOption
+    IonItem, IonButton, IonLabel, IonRange, IonIcon, IonBadge, IonButtons, IonSelect, IonSelectOption
   ],
 })
+
+
+// ... (keep imports the same)
+
 export class HomePage {
-  // These were missing!
+  streak: number = 0;
   isCountdown: boolean = false;
   countdownValue: string | number = '';
   xp: number = 0;
   level: string = 'DIRECT';
-
   numRows: number = 3;
-  displaySpeed: number = 1500;
+  displaySpeed: number = 1000;
   totalQuestions: number = 5;
   questions: any[] = [];
   currentIndex: number = 0;
   gameState: 'MENU' | 'FLASHING' | 'INPUT' | 'FEEDBACK' | 'RESULT' = 'MENU';
   currentFlashNumber: string = "";
-  userAnswer: number | null = null;
+  currentFlashValue: number = 0;
+  userAnswer: string = ""; // Always keep as string
   correctAnswer: number = 0;
   score: number = 0;
 
@@ -47,45 +51,29 @@ export class HomePage {
     addIcons({ star, trophy, checkmarkCircle, closeCircle, play, arrowForwardOutline, refreshOutline, close });
   }
 
-
-  // 1. Text-to-Speech Function
-  // Add this helper to the top of your class or inside the speak method
   speak(text: string): Promise<void> {
     return new Promise((resolve) => {
-      // 1. Cancel any current speech (prevents overlapping)
       window.speechSynthesis.cancel();
-
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1.5; // Faster for Abacus speed
-      utterance.pitch = 1.0;
+      utterance.rate = 1.6;
       utterance.lang = 'en-US';
-
-      // 2. This is the magic: resolve the promise only when the voice finishes
-      utterance.onend = () => {
-        resolve();
-      };
-
-      // 3. If there's an error, don't get stuck
-      utterance.onerror = () => {
-        resolve();
-      };
-
+      utterance.onend = () => resolve();
+      utterance.onerror = () => resolve();
       window.speechSynthesis.speak(utterance);
     });
   }
 
-  // 2. Updated Start Game with Countdown
   async startNewGame() {
     this.score = 0;
     this.currentIndex = 0;
-
+    this.streak = 0;
     this.dataService.getQuestions(this.totalQuestions, 1, this.numRows).subscribe({
       next: async (res: any) => {
         this.questions = res.questions;
         await this.showCountdown();
         this.runSequence();
       },
-      error: (err) => alert("Engine waking up... please wait.")
+      error: () => alert("Engine waking up... please wait.")
     });
   }
 
@@ -93,60 +81,60 @@ export class HomePage {
     this.gameState = 'FLASHING';
     this.isCountdown = true;
     const tones = ['3', '2', '1', 'Go'];
-
     for (let t of tones) {
       this.countdownValue = t;
-      await this.speak(t); // Wait for the voice to say the number
-      // Small extra pause for rhythm
-      await new Promise(r => setTimeout(r, 200));
+      await this.speak(t);
+      await new Promise(r => setTimeout(r, 100));
     }
     this.isCountdown = false;
   }
 
-  // 3. Updated Sequence with Voice
   async runSequence() {
     this.gameState = 'FLASHING';
-    this.userAnswer = null;
+    this.userAnswer = ""; // FIX: Reset to empty string, NOT null
     const problem = this.questions[this.currentIndex].problem;
 
     for (let num of problem) {
-      // Determine the text to show and say
-      const voiceText = num > 0 ? `plus ${num}` : `minus ${Math.abs(num)}`;
+      this.currentFlashValue = num;
       this.currentFlashNumber = num > 0 ? `+${num}` : `${num}`;
+      const voiceText = num > 0 ? `plus ${num}` : `minus ${Math.abs(num)}`;
 
-      // AWAIT the voice: the loop pauses here until the voice finishes speaking
       await this.speak(voiceText);
-
-      // Optional: Keep the number on screen for a split second longer after voice ends
       await new Promise(r => setTimeout(r, 200));
-
-      // Hide number before the next one
       this.currentFlashNumber = "";
       await new Promise(r => setTimeout(r, 100));
     }
-
     this.gameState = 'INPUT';
   }
 
-  // 4. Celebration Logic
+  // --- KEYBOARD LOGIC FIX ---
+  addToAnswer(val: number) {
+    this.speak(val.toString());
+    // Limit to 5 digits so it doesn't break the UI
+    if (this.userAnswer.length < 5) {
+      this.userAnswer += val.toString();
+    }
+  }
+
+  clearAnswer() {
+    this.userAnswer = "";
+  }
+
   submitAnswer() {
     this.correctAnswer = this.questions[this.currentIndex].answer;
+
+    // Compare number version of string to the answer
     if (Number(this.userAnswer) === this.correctAnswer) {
       this.score++;
-      this.xp += 10;
-      this.celebrate(); // Trigger Confetti
+      this.streak++;
+      this.xp += (10 * this.streak);
+      this.celebrate();
+    } else {
+      this.streak = 0;
     }
     this.gameState = 'FEEDBACK';
   }
 
-  celebrate() {
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#ffce00', '#ff4961', '#2dd36f']
-    });
-  }
   nextQuestion() {
     if (this.currentIndex < this.questions.length - 1) {
       this.currentIndex++;
@@ -156,8 +144,12 @@ export class HomePage {
     }
   }
 
+  celebrate() {
+    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+  }
+
   goToMenu() {
-    window.speechSynthesis.cancel(); // STOPS all talking immediately
+    window.speechSynthesis.cancel();
     this.gameState = 'MENU';
   }
 }
