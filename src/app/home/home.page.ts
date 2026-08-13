@@ -21,7 +21,7 @@ import { star, trophy, checkmarkCircle, closeCircle, play, arrowForwardOutline, 
   imports: [
     CommonModule, FormsModule, HttpClientModule,
     IonHeader, IonToolbar, IonTitle, IonContent, IonCard, IonCardContent,
-    IonItem, IonButton, IonLabel, IonRange, IonIcon, IonBadge, IonButtons, IonSelect, IonSelectOption, IonSegment, IonSegmentButton
+    IonItem, IonButton, IonLabel, IonRange, IonIcon, IonButtons, IonSelect, IonSelectOption, IonSegment, IonSegmentButton
   ],
 })
 
