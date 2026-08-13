@@ -18,8 +18,7 @@ import { star, trophy, checkmarkCircle, closeCircle, play, arrowForwardOutline, 
   imports: [
     CommonModule, FormsModule, HttpClientModule,
     IonHeader, IonToolbar, IonTitle, IonContent, IonCard, IonCardContent,
-    IonItem, IonInput, IonButton, IonText, IonLabel, IonRange, IonIcon,
-    IonProgressBar, IonBadge, IonButtons, IonSelect, IonSelectOption
+    IonItem, IonInput, IonButton, IonLabel, IonRange, IonIcon, IonBadge, IonButtons, IonSelect, IonSelectOption
   ],
 })
 export class HomePage implements OnInit {
@@ -41,6 +40,7 @@ export class HomePage implements OnInit {
   correctSound = new Audio('assets/sounds/correct.mp3');
   wrongSound = new Audio('assets/sounds/wrong.mp3');
   tickSound = new Audio('assets/sounds/tick.mp3');
+  dataService: any;
   constructor(private http: HttpClient) {
     // Added 'home' and 'close' icons here
     addIcons({ star, trophy, checkmarkCircle, closeCircle, play, arrowForwardOutline, refreshOutline, home, close });
@@ -55,11 +55,17 @@ export class HomePage implements OnInit {
   }
 
   fetchQuestions() {
-    this.http.get(`http://127.0.0.1:8000/api/practice?questions=${this.totalQuestions}&digits=1&rows=${this.numRows}`)
-      .subscribe((res: any) => {
+    // Check if this line matches the name in your service exactly!
+    this.dataService.getQuestions(this.totalQuestions, 1, this.numRows).subscribe({
+      next: (res: any) => {
         this.questions = res.questions;
         this.runSequence();
-      });
+      },
+      error: (err) => {
+        console.error("API Error: ", err);
+        alert("Backend is waking up! Please try again in 10 seconds.");
+      }
+    });
   }
 
   async runSequence() {

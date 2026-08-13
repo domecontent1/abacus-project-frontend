@@ -17,6 +17,7 @@ export class DataService {
   constructor(private http: HttpClient) { }
 
   getQuestions(count: number, digits: number, rows: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}?questions=${count}&digits=${digits}&rows=${rows}`);
+    const finalUrl = `${this.apiUrl}?questions=${count}&digits=${digits}&rows=${rows}`;
+    return this.http.get(finalUrl);
   }
 }
