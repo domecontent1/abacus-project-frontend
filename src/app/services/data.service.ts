@@ -12,6 +12,6 @@ export class DataService {
 
   getQuestions(count: number, digits: number, rows: number): Observable<any> {
     const finalUrl = `${this.apiUrl}?questions=${count}&digits=${digits}&rows=${rows}`;
-    return this.http.get(finalUrl);
+    return this.http.get(finalUrl); // NO url: label here!
   }
 }

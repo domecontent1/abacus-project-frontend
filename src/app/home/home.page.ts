@@ -4,9 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonCard, IonCardContent,
-  IonItem, IonInput, IonButton, IonText, IonLabel, IonRange, IonIcon, IonProgressBar, IonBadge, IonButtons
+  IonItem, IonInput, IonButton, IonText, IonLabel, IonRange, IonIcon,
+  IonProgressBar, IonBadge, IonButtons, IonSelect, IonSelectOption
 } from '@ionic/angular/standalone';
 import { DataService } from '../services/data.service';
+import { addIcons } from 'ionicons';
+import { star, trophy, checkmarkCircle, closeCircle, play, arrowForwardOutline, refreshOutline, close } from 'ionicons/icons';
 
 @Component({
   selector: 'app-home',
@@ -16,10 +19,14 @@ import { DataService } from '../services/data.service';
   imports: [
     CommonModule, FormsModule, HttpClientModule,
     IonHeader, IonToolbar, IonTitle, IonContent, IonCard, IonCardContent,
-    IonItem, IonInput, IonButton, IonLabel, IonRange, IonIcon, IonBadge, IonButtons
+    IonItem, IonInput, IonButton, IonLabel, IonRange, IonIcon, IonBadge, IonButtons, IonSelect, IonSelectOption
   ],
 })
 export class HomePage implements OnInit {
+  // These were missing!
+  xp: number = 0;
+  level: string = 'DIRECT';
+
   numRows: number = 3;
   displaySpeed: number = 1000;
   totalQuestions: number = 5;
@@ -31,13 +38,16 @@ export class HomePage implements OnInit {
   correctAnswer: number = 0;
   score: number = 0;
 
-  constructor(private dataService: DataService) {}
+  constructor(private dataService: DataService) {
+    addIcons({ star, trophy, checkmarkCircle, closeCircle, play, arrowForwardOutline, refreshOutline, close });
+  }
 
   ngOnInit() {}
 
   startNewGame() {
     this.score = 0;
     this.currentIndex = 0;
+    // We send the 'level' to the backend now
     this.dataService.getQuestions(this.totalQuestions, 1, this.numRows).subscribe({
       next: (res: any) => {
         this.questions = res.questions;
@@ -62,7 +72,10 @@ export class HomePage implements OnInit {
 
   submitAnswer() {
     this.correctAnswer = this.questions[this.currentIndex].answer;
-    if (Number(this.userAnswer) === this.correctAnswer) { this.score++; }
+    if (Number(this.userAnswer) === this.correctAnswer) {
+      this.score++;
+      this.xp += 10; // Increase XP for correct answer
+    }
     this.gameState = 'FEEDBACK';
   }
 
