@@ -65,7 +65,7 @@
     <div class="input-area">
       <h2 class="prompt-text">What was the total?</h2>
       <div class="input-box">
-        <ion-input type="number" [(ngModel)]="userAnswer" placeholder="0" class="large-input" autofocus="true"></ion-input>
+        <ion-input type="number" [(ngModel)]="userAnswer" placeholder="0" class="large-input" [autofocus]="true"></ion-input>
       </div>
       <ion-button expand="block" (click)="submitAnswer()" class="check-button" color="warning">
         CHECK ANSWER
