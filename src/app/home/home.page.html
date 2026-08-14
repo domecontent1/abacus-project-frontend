@@ -1,14 +1,11 @@
 <ion-header class="ion-no-border">
   <ion-toolbar color="transparent">
-    <ion-title></ion-title>
-    <!-- Show Home button only if we are NOT in the Menu -->
-    @if (gameState !== 'MENU') {
-      <ion-buttons slot="end">
-        <ion-button (click)="goToMenu()" color="light">
-          <ion-icon name="close" slot="icon-only"></ion-icon>
-        </ion-button>
-      </ion-buttons>
-    }
+    <ion-title class="header-title">🧮 Abacus Hero</ion-title>
+    <ion-buttons slot="end" *ngIf="gameState !== 'MENU'">
+      <ion-button (click)="goToMenu()" color="light">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -17,11 +14,10 @@
   <!-- 1. START MENU -->
   @if (gameState === 'MENU') {
     <div class="menu-container">
-      <div class="xp-badge">🧠 Brain XP: {{xp}}</div>
+      <div class="xp-badge">⭐ XP: {{xp}} | Level : {{level}}</div>
 
-      <div class="hero-section">
-        <h1 class="main-title">ABACUS<br><span>HERO</span></h1>
-      </div>
+      <h1 class="main-title">🧮 Abacus Hero</h1>
+      <p class="tagline">Train your brain !</p>
 
       <ion-card class="glass-card">
         <ion-card-content>
@@ -38,12 +34,26 @@
           </div>
 
           <div class="setting-item">
-            <ion-label>Select How many numbers : <b>{{numRows}}</b></ion-label>
-            <ion-range [min]="3" [max]="15" [(ngModel)]="numRows" color="danger"></ion-range>
+            <ion-label>🔢 Numbers: {{numRows}}</ion-label>
+            <ion-range [min]="2" [max]="15" [(ngModel)]="numRows" color="danger"></ion-range>
           </div>
 
-          <ion-button expand="block" (click)="startNewGame()" class="play-button">
-            START MISSION
+          <div class="setting-item">
+            <ion-label>⚡ Speed: {{displaySpeed/1000}}s</ion-label>
+            <ion-range [min]="500" [max]="2000" [step]="100" [(ngModel)]="displaySpeed" color="tertiary"></ion-range>
+          </div>
+
+          <div class="setting-item">
+            <ion-label>🔢 Digits</ion-label>
+            <div class="digit-selector">
+              <ion-button [color]="digitCount === 1 ? 'warning' : 'light'" (click)="digitCount = 1">1 Digit</ion-button>
+              <ion-button [color]="digitCount === 2 ? 'warning' : 'light'" (click)="digitCount = 2">2 Digits</ion-button>
+            </div>
+          </div>
+
+          <ion-button expand="block" (click)="startNewGame()" class="play-button" [disabled]="isLoading">
+            <ion-spinner name="dots" *ngIf="isLoading"></ion-spinner>
+            <span *ngIf="!isLoading">🚀 START</span>
           </ion-button>
         </ion-card-content>
       </ion-card>
@@ -51,109 +61,81 @@
   }
 
   <!-- 2. FLASHING SCREEN -->
-  @if (gameState === 'FLASHING' && !isCountdown) {
+  @if (gameState === 'FLASHING') {
     <div class="game-area">
-      <!-- Progress Bar at the top -->
-      <div class="timer-bar-container">
-        <div class="timer-bar" [style.width.%]="((currentIndex + 1) / totalQuestions) * 100"></div>
+      <ion-badge class="progress-text">Question {{currentIndex + 1}} of {{totalQuestions}}</ion-badge>
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="getProgressPercent()"></div>
       </div>
 
-      <div class="question-count">Challenge {{currentIndex + 1}} of {{totalQuestions}}</div>
-
-      <div class="number-circle animate-pop" [class.negative]="currentFlashValue < 0">
-        {{ currentFlashNumber }}
+      <div class="number-display">
+        <div *ngIf="showNumber" class="number-circle" [class.positive]="currentNumber > 0" [class.negative]="currentNumber < 0">
+          {{ currentNumber > 0 ? '+' + currentNumber : currentNumber }}
+        </div>
       </div>
+
+      <div class="streak-display" *ngIf="streak > 0">🔥 {{streak}} Streak!</div>
     </div>
+
+
+      <div class="number-circle animate-pop"
+           [class.countdown-style]="isCountdown"
+           [class.positive]="!isCountdown && currentFlashValue >= 0"
+           [class.negative]="!isCountdown && currentFlashValue < 0">
+        {{ isCountdown ? countdownValue : currentFlashNumber }}
+      </div>
   }
 
   <!-- 3. INPUT SCREEN (The Keyboard) -->
-  @if (gameState === 'INPUT') {
-    <div class="input-area">
-      <h2 class="prompt-text" style="color: white;">What was the total?</h2>
-      <div class="input-display animate-pop">
-        <div class="value">{{ userAnswer || '?' }}</div>
-      </div>
-
-      <div class="numpad-grid">
-        @for (num of [1,2,3,4,5,6,7,8,9]; track num) {
-          <button (click)="addToAnswer(num)" class="num-btn">{{ num }}</button>
-        }
-        <button (click)="clearAnswer()" class="num-btn clear">C</button>
-        <button (click)="addToAnswer(0)" class="num-btn">0</button>
-        <button (click)="submitAnswer()" class="num-btn check">OK</button>
-      </div>
+  <!-- INPUT -->
+  <div *ngIf="gameState === 'INPUT'" class="input-area">
+    <div class="question-header">
+      <span class="q-badge">Q{{currentIndex + 1}}/{{totalQuestions}}</span>
+      <span class="streak-badge" *ngIf="streak > 0">🔥 {{streak}}</span>
     </div>
-  }
+
+    <h2 class="prompt-text">What's the total?</h2>
+
+    <div class="input-display">
+      <span class="input-value">{{ userAnswer || '?' }}</span>
+    </div>
+
+    <div class="numpad-grid">
+      <button *ngFor="let num of [1,2,3,4,5,6,7,8,9]" (click)="addToAnswer(num)" class="num-btn">{{ num }}</button>
+      <button (click)="clearAnswer()" class="num-btn clear-btn">⌫</button>
+      <button (click)="addToAnswer(0)" class="num-btn">0</button>
+      <button (click)="submitAnswer()" class="num-btn check-btn">✓</button>
+    </div>
+  </div>
 
   <!-- 4. FEEDBACK SCREEN (Restored your specific text) -->
-  @if (gameState === 'FEEDBACK') {
-    <div class="feedback-container">
+  <div *ngIf="gameState === 'FEEDBACK'" class="feedback-container">
+    <div class="feedback-emoji">{{ Number(userAnswer) === correctAnswer ? '🎉' : '💪' }}</div>
+    <h1 class="feedback-title">{{ Number(userAnswer) === correctAnswer ? 'Correct!' : 'Oops!' }}</h1>
 
-      <!-- THE MASCOT -->
-      <div class="mascot-container animate-pop">
-        @if (streak > 0) {
-          <div class="mascot happy">🤩</div>
-          <h1 class="success-text">YOU ARE A GENIUS!</h1>
-        } @else {
-          <div class="mascot sad">😟</div>
-          <h1 class="fail-text">ALMOST HAD IT!</h1>
-        }
-      </div>
-
-      @if (streak > 1) {
-        <div class="streak-badge">🔥 {{streak}} HIT COMBO</div>
-      }
-
-      <div class="reveal-box">
-        <p>The Answer was: <b class="final-total">{{correctAnswer}}</b></p>
-        <p>You typed: {{userAnswer}}</p>
-      </div>
-
-      <ion-button expand="block" (click)="nextQuestion()" class="next-btn">
-        NEXT CHALLENGE
-      </ion-button>
+    <div class="answer-reveal">
+      <p class="answer-label">Answer </p>
+      <div class="answer-value">{{correctAnswer}}</div>
+      <p class="your-answer">You typed: {{userAnswer || '0'}}</p>
     </div>
-  }
+
+    <ion-button expand="block" (click)="nextQuestion()" class="next-btn">
+      {{ currentIndex < questions.length - 1 ? '➡️ Next' : '🏆 Results' }}
+    </ion-button>
+  </div>
 
   <!-- 5. FINAL RESULT -->
-  @if (gameState === 'RESULT') {
-    <div class="result-container">
-      <ion-icon name="trophy" class="trophy-icon"></ion-icon>
-      <h1>Mission Complete!</h1>
-      <div class="final-score">
-        <span>YOUR SCORE</span>
-        <h2>{{score}} / {{totalQuestions}}</h2>
-      </div>
-      <ion-button expand="block" (click)="gameState = 'MENU'" class="play-button">
-        <ion-icon name="refresh-outline" slot="start"></ion-icon> PLAY AGAIN
-      </ion-button>
+  <div *ngIf="gameState === 'RESULT'" class="result-container">
+    <div class="result-emoji">🎊</div>
+    <h1 class="result-title">Done!</h1>
+
+    <div class="result-stats">
+      <div class="result-stat">✅ {{score}}</div>
+      <div class="result-stat">❌ {{questions.length - score}}</div>
+      <div class="result-stat">{{Math.round(score / questions.length * 100)}}%</div>
     </div>
 
-  }
-
-
-  <!-- Speed Selector -->
-  <div class="setting-item">
-    <ion-label>Flash Speed: <b>{{ displaySpeed / 1000 }}s</b></ion-label>
-    <ion-range [min]="300" [max]="3000" [step]="100" [(ngModel)]="displaySpeed" color="secondary">
-      <ion-icon slot="start" name="timer-outline"></ion-icon>
-    </ion-range>
+    <ion-button expand="block" (click)="goToMenu()" class="play-button">🔄 Play Again</ion-button>
   </div>
-
-  <!-- Digit Selector -->
-  <div class="setting-item">
-    <ion-label>Digits: <b>{{ digitCount }}</b></ion-label>
-    <ion-segment [(ngModel)]="digitCount" color="tertiary" mode="ios">
-      <!-- Using [value]="1" (number) instead of value="1" (string) -->
-      <ion-segment-button [value]="1">
-        <ion-label>1 Digit</ion-label>
-      </ion-segment-button>
-      <ion-segment-button [value]="2">
-        <ion-label>2 Digits</ion-label>
-      </ion-segment-button>
-    </ion-segment>
-  </div>
-
-
 
 </ion-content>

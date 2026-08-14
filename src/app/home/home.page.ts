@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
@@ -6,8 +6,8 @@ import confetti from 'canvas-confetti'; // We'll add this for the win!
 
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonCard, IonCardContent,
-  IonItem, IonInput, IonButton, IonText, IonLabel, IonRange, IonIcon,
-  IonProgressBar, IonBadge, IonButtons, IonSelect, IonSelectOption, IonSegment, IonSegmentButton, IonSpinner
+  IonItem, IonButton, IonLabel, IonRange, IonIcon
+  , IonBadge, IonButtons, IonSelect, IonSelectOption, IonSegment, IonSegmentButton, IonSpinner
 } from '@ionic/angular/standalone';
 import { DataService } from '../services/data.service';
 import { addIcons } from 'ionicons';
@@ -21,7 +21,7 @@ import { star, trophy, checkmarkCircle, closeCircle, play, arrowForwardOutline, 
   imports: [
     CommonModule, FormsModule, HttpClientModule,
     IonHeader, IonToolbar, IonTitle, IonContent, IonCard, IonCardContent,
-    IonItem, IonButton, IonLabel, IonRange, IonIcon, IonButtons, IonSelect, IonSelectOption, IonSegment, IonSegmentButton
+    IonItem, IonButton, IonLabel, IonRange, IonIcon, IonBadge, IonButtons, IonSelect, IonSelectOption, IonSpinner
   ],
 })
 
@@ -47,7 +47,8 @@ export class HomePage {
   digitCount: number = 1; // Default to 1 digit
   displaySpeed: number = 1000; // Default to 1 second
   isLoading: boolean = false; // NEW
-
+  currentNumber: number = 0;
+  showNumber: boolean = false;
 
 
 
@@ -185,4 +186,12 @@ export class HomePage {
     window.speechSynthesis.cancel();
     this.gameState = 'MENU';
   }
+
+
+  getProgressPercent(): number {
+    return ((this.currentIndex) / this.totalQuestions) * 100;
+  }
+
+  protected readonly Number = Number;
+  protected readonly Math = Math;
 }
