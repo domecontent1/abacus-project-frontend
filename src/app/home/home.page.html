@@ -1,6 +1,8 @@
 <ion-header class="ion-no-border">
   <ion-toolbar color="transparent">
-    <ion-title class="header-title">🧮 Abacus Hero</ion-title>
+    <ion-title style="color: black; font-weight: 900; letter-spacing: 2px;  font-size: 1.4rem;">
+      🧒Sarth
+    </ion-title>
     <ion-buttons slot="end" *ngIf="gameState !== 'MENU'">
       <ion-button (click)="goToMenu()" color="light">
         <ion-icon name="close"></ion-icon>
@@ -14,24 +16,12 @@
   <!-- 1. START MENU -->
   @if (gameState === 'MENU') {
     <div class="menu-container">
-      <div class="xp-badge">⭐ XP: {{xp}} | Level : {{level}}</div>
-
       <h1 class="main-title">🧮 Abacus Hero</h1>
       <p class="tagline">Train your brain !</p>
 
       <ion-card class="glass-card">
         <ion-card-content>
           <!-- Level Selector -->
-          <div class="setting-item">
-            <ion-label>Training Level</ion-label>
-            <ion-item lines="none" class="kid-select">
-              <ion-select [(ngModel)]="level" interface="popover">
-                <ion-select-option value="DIRECT">Level 1: Direct</ion-select-option>
-                <ion-select-option value="SMALL">Level 2: Small Friends</ion-select-option>
-                <ion-select-option value="BIG">Level 3: Big Friends</ion-select-option>
-              </ion-select>
-            </ion-item>
-          </div>
 
           <div class="setting-item">
             <ion-label>🔢 Numbers: {{numRows}}</ion-label>
