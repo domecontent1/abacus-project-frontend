@@ -877,3 +877,13 @@ ion-segment {
   text-transform: uppercase;
   letter-spacing: 1px;
 }
+.visitor-stats-badge {
+  margin: 20px auto;
+  padding: 8px 15px;
+  background: rgba(0, 0, 0, 0.1); // Light dark background
+  border-radius: 20px;
+  color: #4b2c20; // Dark brown/purple for contrast
+  font-size: 0.9rem;
+  display: inline-block;
+  font-weight: 500;
+}
