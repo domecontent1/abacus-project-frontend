@@ -1,7 +1,7 @@
 <ion-header class="ion-no-border">
   <ion-toolbar color="transparent">
     <ion-title style="color: black; font-weight: 900; letter-spacing: 2px;  font-size: 1.4rem;">
-      🧒Sarth
+      🧒 {{ studentName || 'Abacus Hero' }}
     </ion-title>
     <ion-buttons slot="end" *ngIf="gameState !== 'MENU'">
       <ion-button (click)="goToMenu()" color="light">
@@ -17,27 +17,50 @@
   @if (gameState === 'MENU') {
     <div class="menu-container">
       <h1 class="main-title">🧮 Abacus Hero</h1>
-      <p class="tagline">Train your brain !</p>
+      <p class="tagline">🧠 Train your brain !</p>
 
       <ion-card class="glass-card">
         <ion-card-content>
           <!-- Level Selector -->
 
+          <div class="setting-item" style="background: white; border-radius: 15px; padding: 5px 15px; margin-bottom: 20px; border: 2px solid #764ba2;">
+            <ion-label color="primary" style="font-size: 0.8rem; text-transform: uppercase;">Your Name</ion-label>
+            <ion-input placeholder="Enter Name..." [(ngModel)]="studentName" (ionInput)="updateName($event)" style="font-size: 1.2rem; font-weight: bold;"></ion-input>
+          </div>
+
           <div class="setting-item">
             <ion-label>🔢 Numbers: {{numRows}}</ion-label>
-            <ion-range [min]="2" [max]="15" [(ngModel)]="numRows" color="danger"></ion-range>
+            <ion-range [min]="2" [max]="15" [(ngModel)]="numRows" color="danger">
+              <ion-label slot="start">2</ion-label>
+              <ion-label slot="end">15</ion-label>
+            </ion-range>
           </div>
 
           <div class="setting-item">
             <ion-label>⚡ Speed: {{displaySpeed/1000}}s</ion-label>
-            <ion-range [min]="500" [max]="2000" [step]="100" [(ngModel)]="displaySpeed" color="tertiary"></ion-range>
+            <ion-range [min]="500" [max]="2000" [step]="100" [(ngModel)]="displaySpeed" color="tertiary">
+              <ion-label slot="start">🐢</ion-label>
+              <ion-label slot="end">🐇</ion-label>
+
+            </ion-range>
           </div>
+
+          <div class="setting-item">
+            <ion-label class="setting-label">
+              <span class="label-icon">🔢</span> Questions: <b>{{totalQuestions}}</b>
+            </ion-label>
+            <ion-range [min]="3" [max]="10" [(ngModel)]="totalQuestions" color="success">
+              <ion-label slot="start">3</ion-label>
+              <ion-label slot="end">10</ion-label>
+            </ion-range>
+          </div>
+
 
           <div class="setting-item">
             <ion-label>🔢 Digits</ion-label>
             <div class="digit-selector">
-              <ion-button [color]="digitCount === 1 ? 'warning' : 'light'" (click)="digitCount = 1">1 Digit</ion-button>
-              <ion-button [color]="digitCount === 2 ? 'warning' : 'light'" (click)="digitCount = 2">2 Digits</ion-button>
+              <ion-button [color]="digitCount === 1 ? 'warning' : 'light'" (click)="digitCount = 1">🟢 1 Digit</ion-button>
+              <ion-button [color]="digitCount === 2 ? 'warning' : 'light'" (click)="digitCount = 2">🟣 2 Digits</ion-button>
             </div>
           </div>
 
@@ -47,6 +70,7 @@
           </ion-button>
         </ion-card-content>
       </ion-card>
+
     </div>
   }
 
@@ -76,6 +100,8 @@
       </div>
   }
 
+
+
   <!-- 3. INPUT SCREEN (The Keyboard) -->
   <!-- INPUT -->
   <div *ngIf="gameState === 'INPUT'" class="input-area">
@@ -84,7 +110,7 @@
       <span class="streak-badge" *ngIf="streak > 0">🔥 {{streak}}</span>
     </div>
 
-    <h2 class="prompt-text">What's the total?</h2>
+    <h2 class="prompt-text">🧮 What's the total?</h2>
 
     <div class="input-display">
       <span class="input-value">{{ userAnswer || '?' }}</span>
@@ -94,8 +120,9 @@
       <button *ngFor="let num of [1,2,3,4,5,6,7,8,9]" (click)="addToAnswer(num)" class="num-btn">{{ num }}</button>
       <button (click)="clearAnswer()" class="num-btn clear-btn">⌫</button>
       <button (click)="addToAnswer(0)" class="num-btn">0</button>
-      <button (click)="submitAnswer()" class="num-btn check-btn">✓</button>
+      <button (click)="submitAnswer()" class="num-btn check-btn">✅</button>
     </div>
+
   </div>
 
   <!-- 4. FEEDBACK SCREEN (Restored your specific text) -->
@@ -120,10 +147,32 @@
     <h1 class="result-title">Done!</h1>
 
     <div class="result-stats">
-      <div class="result-stat">✅ {{score}}</div>
-      <div class="result-stat">❌ {{questions.length - score}}</div>
-      <div class="result-stat">{{Math.round(score / questions.length * 100)}}%</div>
+      <div class="result-stat">
+
+        <span class="stat-label">Correct</span>
+        <span class="stat-number"> : {{score}}</span>
+      </div>
+      <div class="result-stat">
+
+        <span class="stat-label">Wrong : </span>
+        <span class="stat-number">{{questions.length - score}}</span>
+      </div>
+      <div class="result-stat">Accuracy : {{Math.round(score / questions.length * 100)}}%</div>
     </div>
+
+    <div class="result-message">
+      @if (score === questions.length) {
+        <h2>🌟 PERFECT SCORE ! 🌟</h2>
+        <p>You're a math genius ! 🎉</p>
+      } @else if (score >= questions.length * 0.7) {
+        <h2>💪 Great Job!</h2>
+        <p>Keep practicing to get even better !</p>
+      } @else {
+        <h2>📚 Keep Learning!</h2>
+        <p>Practice makes perfect ! Try again !</p>
+      }
+    </div>
+
 
     <ion-button expand="block" (click)="goToMenu()" class="play-button">🔄 Play Again</ion-button>
   </div>

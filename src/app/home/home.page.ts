@@ -7,7 +7,7 @@ import confetti from 'canvas-confetti'; // We'll add this for the win!
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonCard, IonCardContent,
   IonItem, IonButton, IonLabel, IonRange, IonIcon
-  , IonBadge, IonButtons, IonSelect, IonSelectOption, IonSegment, IonSegmentButton, IonSpinner
+  , IonBadge, IonButtons, IonSelect, IonSelectOption, IonSegment, IonSegmentButton, IonSpinner, IonInput
 } from '@ionic/angular/standalone';
 import { DataService } from '../services/data.service';
 import { addIcons } from 'ionicons';
@@ -21,7 +21,7 @@ import { star, trophy, checkmarkCircle, closeCircle, play, arrowForwardOutline, 
   imports: [
     CommonModule, FormsModule, HttpClientModule,
     IonHeader, IonToolbar, IonTitle, IonContent, IonCard, IonCardContent,
-    IonItem, IonButton, IonLabel, IonRange, IonIcon, IonBadge, IonButtons, IonSelect, IonSelectOption, IonSpinner
+    IonButton, IonLabel, IonRange, IonIcon, IonBadge, IonButtons, IonSpinner, IonInput
   ],
 })
 
@@ -34,7 +34,7 @@ export class HomePage {
   countdownValue: string | number = '';
   xp: number = 0;
   level: string = 'DIRECT';
-  numRows: number = 3;
+  numRows: number = 2;
   totalQuestions: number = 5;
   questions: any[] = [];
   currentIndex: number = 0;
@@ -49,14 +49,28 @@ export class HomePage {
   isLoading: boolean = false; // NEW
   currentNumber: number = 0;
   showNumber: boolean = false;
-
+  studentName: string = '';
 
 
 
   // eslint-disable-next-line @angular-eslint/prefer-inject
   constructor(private dataService: DataService) {
     addIcons({ star, trophy, checkmarkCircle, closeCircle, play, arrowForwardOutline, refreshOutline, close });
+  const savedName = localStorage.getItem('studentName');
+  if (savedName) this.studentName = savedName;
   }
+
+  updateName(event:any  ){
+    this.studentName = event.detail.value;
+    localStorage.setItem('studentName', this.studentName);
+  }
+
+
+
+
+
+
+
 
   speak(text: string): Promise<void> {
     return new Promise((resolve) => {
