@@ -1,4 +1,4 @@
-import { Component,OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
@@ -28,7 +28,7 @@ import { star, trophy, checkmarkCircle, closeCircle, play, arrowForwardOutline, 
 
 // ... (keep imports the same)
 
-export class HomePage implements OnInit{
+export class HomePage{
   streak: number = 0;
   isCountdown: boolean = false;
   countdownValue: string | number = '';
@@ -65,19 +65,7 @@ export class HomePage implements OnInit{
   }
 
 
-  ngOnInit() {
-    this.loadProgress();
 
-    this.dataService.getGlobalStats().subscribe({
-      next: (res: any) => {
-        console.log("Stats received from server:", res); // Check your browser console!
-        this.totalGlobalGames = res.total_games_played;
-      },
-      error: (err) => {
-        console.error("Backend link might be wrong", err);
-      }
-    });
-  }
 
   loadProgress() {
     const savedName = localStorage.getItem('studentName');
