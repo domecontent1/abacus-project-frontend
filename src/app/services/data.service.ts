@@ -17,7 +17,7 @@ export class DataService {
     return this.http.get(url);
   }
 
-  getGlobalStats(): Observable<any> {
-    return this.http.get('https://abacus-project-backend.onrender.com/api/stats');
-  }
+  // getGlobalStats(): Observable<any> {
+  //   return this.http.get('https://abacus-project-backend.onrender.com/api/stats');
+  // }
 }
